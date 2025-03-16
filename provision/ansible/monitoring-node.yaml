@@ -38,6 +38,11 @@
         name: NetworkManager
         state: restarted
 
+    - name: Clona repositório com os arquivos do curso para a HOME do usuario suporte
+      git:
+        repo: 'https://github.com/4linux/437.git'
+        dest: /home/suporte/437
+
     - name: Adicionar repositório do Docker
       command: dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
       args:

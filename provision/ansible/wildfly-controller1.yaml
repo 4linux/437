@@ -33,6 +33,11 @@
         name: NetworkManager
         state: restarted
 
+    - name: Clona repositório com os arquivos do curso para a HOME do usuario suporte
+      git:
+        repo: 'https://github.com/4linux/437.git'
+        dest: /home/suporte/437
+
     - name: Instalar dnf-plugins-core
       dnf:
         name: dnf-plugins-core
