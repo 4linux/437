@@ -1,0 +1,11 @@
+embed-host-controller --std-out=echo --domain-config=domain.xml --host-config=host.xml
+/host=primary:write-attribute(name=name,value=wildfly-controller2)
+stop-embedded-host-controller
+embed-host-controller --std-out=echo --domain-config=domain.xml --host-config=host.xml
+/host=wildfly-controller2/subsystem=elytron/authentication-configuration=hostAuthConfig:add(sasl-mechanism-selector="DIGEST-MD5",authentication-name="wildfly-controller2",realm="ManagementRealm",credential-reference={clear-text="4LabsCurso@"})
+/host=wildfly-controller2/subsystem=elytron/authentication-context=hcAuthContext:add()
+/host=wildfly-controller2/subsystem=elytron/authentication-context=hcAuthContext:write-attribute(name=match-rules,value=[{"authentication-configuration" => "hostAuthConfig"}])
+/host=wildfly-controller2:write-attribute(name=domain-controller,value={remote={protocol="remote",host="wildfly-domain",port=9999,authentication-context="hcAuthContext"}})
+/host=wildfly-controller2/interface=public:write-attribute(name=inet-address, value="172.16.0.102")
+stop-embedded-host-controller
+exit

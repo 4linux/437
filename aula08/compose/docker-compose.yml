@@ -1,0 +1,35 @@
+services:
+  mysql-wildfly:
+    image: mysql:8
+    container_name: mysql-wildfly
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wildflydb
+      MYSQL_USER: wildfly
+      MYSQL_PASSWORD: wildfly
+    ports:
+      - "3306:3306"
+    networks:
+      - wildfly-network
+    volumes:
+      - /home/suporte/mysql-vol:/var/lib/mysql
+
+  postgres-wildfly:
+    image: postgres:15
+    container_name: postgres-wildfly
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wildflydb
+      POSTGRES_USER: wildfly
+      POSTGRES_PASSWORD: wildfly
+    ports:
+      - "5432:5432"
+    networks:
+      - wildfly-network
+    volumes:
+      - /home/suporte/postgresql-vol:/var/lib/postgresql/data
+
+networks:
+  wildfly-network:
+    driver: bridge

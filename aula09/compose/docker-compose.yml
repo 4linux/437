@@ -1,0 +1,17 @@
+services:
+  openldap:
+    image: osixia/openldap:latest
+    container_name: ldap-server
+    restart: always
+    environment:
+      LDAP_ORGANISATION: "Wildfly Org"
+      LDAP_DOMAIN: "wildfly.org"      
+      LDAP_ADMIN_PASSWORD: "admin"
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - ./ldap-data:/var/lib/ldap
+      - ./ldap-config:/etc/ldap/slapd.d
+      - ./ldap-seed:/container/service/slapd/assets/config/bootstrap/ldif/custom
+    command: --copy-service

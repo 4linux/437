@@ -1,0 +1,24 @@
+### Cria o contexto de diretório LDAP no Domain Controller
+/host=wildfly-domain/subsystem=elytron/dir-context=ldapDirContext:add(url="ldap://devops-node:389", principal="cn=admin,dc=wildfly,dc=org", credential-reference={clear-text="admin"})
+
+### Cria o Realm LDAP (define onde buscar usuários no LDAP)
+/host=wildfly-domain/subsystem=elytron/ldap-realm=ldapRealm:add(dir-context=ldapDirContext, identity-mapping={search-base-dn="ou=Users,dc=wildfly,dc=org", rdn-identifier="uid", user-password-mapper={from="userPassword"}, attribute-mapping=[{filter-base-dn="ou=Roles,dc=wildfly,dc=org", filter="(&(objectClass=groupOfNames)(member={1}))", from="cn", to="Roles"}]})
+
+### Cria o decodificador de roles baseado em atributos LDAP
+/host=wildfly-domain/subsystem=elytron/simple-role-decoder=from-roles-attribute:add(attribute=Roles)
+
+### Cria o Security Domain que usa o LDAP
+/host=wildfly-domain/subsystem=elytron/security-domain=ldapSecurityDomain:add(realms=[{realm=ldapRealm, role-decoder=from-roles-attribute}], default-realm=ldapRealm, permission-mapper=default-permission-mapper)
+
+### Cria a autenticação HTTP para o painel de administração usando LDAP
+/host=wildfly-domain/subsystem=elytron/http-authentication-factory=ldapMgmtHttpAuth:add(http-server-mechanism-factory=global, security-domain=ldapSecurityDomain, mechanism-configurations=[{mechanism-name=BASIC, mechanism-realm-configurations=[{realm-name=ManagementRealm}]}])
+
+### Aplica a autenticação LDAP no painel de administração do WildFly Domain Mode
+/host=wildfly-domain/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory, value=ldapMgmtHttpAuth)
+
+### Redefine a autenticação
+/host=wildfly-domain/core-service=management/management-interface=http-interface:undefine-attribute(name=http-authentication-factory)
+
+### Reaplica a autenticação HTTP LDAP para administração
+/host=wildfly-domain/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory, value=ldapMgmtHttpAuth)
+

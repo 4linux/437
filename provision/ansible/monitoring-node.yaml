@@ -1,0 +1,80 @@
+---
+- hosts: monitoring-node
+  become: yes
+  become_user: root
+  become_method: sudo
+  tasks:
+  
+    - name: Atualiza as políticas de criptografia para permitir SHA1
+      ansible.builtin.command: update-crypto-policies --set DEFAULT:SHA1
+      changed_when: false
+
+    - name: Garantindo /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        line: "{{ item }}"
+      with_items:
+        - 172.16.0.100 wildfly-domain.4labs.example wildfly-domain
+        - 172.16.0.101 wildfly-controller1.4labs.example wildfly-controller1
+        - 172.16.0.102 wildfly-controller2.4labs.example wildfly-controller2
+        - 172.16.0.103 devops-node.4labs.example devops-node
+        - 172.16.0.104 monitoring-node.4labs.example monitoring-node
+
+    - name: Remove linhas que começam com 127.0.1.1 ou 127.0.2.1 no /etc/hosts
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '^127.0.[12].1'
+        state: absent
+
+    - name: Desativa o gerenciamento de DNS pelo NetworkManager
+      ansible.builtin.copy:
+        dest: /etc/NetworkManager/conf.d/dns.conf
+        content: |
+          [main]
+          dns=none
+
+    - name: Reinicia o NetworkManager para aplicar mudanças
+      ansible.builtin.service:
+        name: NetworkManager
+        state: restarted
+
+    - name: Adicionar repositório do Docker
+      command: dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+      args:
+        creates: /etc/yum.repos.d/docker-ce.repo
+
+    - name: Adicionar repositório do Docker
+      command: dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+      args:
+        creates: /etc/yum.repos.d/docker-ce.repo
+
+    - name: Instalar pacotes do Docker
+      dnf:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+
+    - name: Habilitar e iniciar o serviço Docker
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Adicionar usuário 'suporte' ao grupo Docker
+      user:
+        name: suporte
+        groups: docker
+        append: yes
+
+    - name: Adiciona regra de firewall para liberar portas do Prometheus e Grafana
+      ansible.builtin.firewalld:
+        port: "{{ item }}"
+        permanent: yes
+        state: enabled
+        immediate: yes
+      loop:
+        - "9090/tcp"
+        - "3000/tcp"

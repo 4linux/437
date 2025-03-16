@@ -1,0 +1,24 @@
+#### Cria um dir-context para conectar ao servidor LDAP
+/subsystem=elytron/dir-context=ldapDirContext:add(url="ldap://devops-node:389",principal="cn=admin,dc=wildfly,dc=org",credential-reference={clear-text="admin"})
+
+#### Cria um ldap-realm para autenticação de usuários
+/subsystem=elytron/ldap-realm=ldapRealm:add(dir-context=ldapDirContext,identity-mapping={search-base-dn="ou=Users,dc=wildfly,dc=org",rdn-identifier="uid",user-password-mapper={from="userPassword"},attribute-mapping=[{filter-base-dn="ou=Roles,dc=wildfly,dc=org",filter="(&(objectClass=groupOfNames)(member={1}))",from="cn",to="Roles"}]})
+
+#### Cria um decodificador de roles para interpretar permissões do LDAP
+/subsystem=elytron/simple-role-decoder=from-roles-attribute:add(attribute=Roles)
+
+#### Cria um security-domain para associar o LDAP à segurança do WildFly
+/subsystem=elytron/security-domain=ldapSecurityDomain:add(realms=[{realm=ldapRealm,role-decoder=from-roles-attribute}],default-realm=ldapRealm,permission-mapper=default-permission-mapper)
+
+#### Cria um http-authentication-factory para autenticação na aplicação
+/subsystem=elytron/http-authentication-factory=ldapHttpAuth:add(http-server-mechanism-factory=global,security-domain=ldapSecurityDomain,mechanism-configurations=[{mechanism-name=BASIC,mechanism-realm-configurations=[{realm-name=ldapAppSecurityDomain}]}])
+
+#### Associa a autenticação LDAP à aplicação no Undertow
+/subsystem=undertow/application-security-domain=ldapAppSecurityDomain:add(http-authentication-factory=ldapHttpAuth)
+
+#### Cria um http-authentication-factory para autenticação no Management Interface
+/subsystem=elytron/http-authentication-factory=mgmt-ldap-http-auth:add(http-server-mechanism-factory=global, security-domain=ldapSecurityDomain, mechanism-configurations=[{mechanism-name=BASIC, mechanism-realm-configurations=[{realm-name=ManagementRealm}]}])
+
+#### Associa a autenticação LDAP ao Management Interface
+/core-service=management/management-interface=http-interface:write-attribute(name=http-authentication-factory, value=mgmt-ldap-http-auth)
+

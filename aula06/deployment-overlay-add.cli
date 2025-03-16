@@ -1,0 +1,1 @@
+deployment-overlay add --name=singleton-policy-default --content=/META-INF/singleton-deployment.xml=/tmp/singleton-deployment.xml --deployments=ha-singleton-deployment.war --redeploy-affected

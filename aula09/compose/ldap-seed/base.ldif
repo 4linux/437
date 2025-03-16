@@ -1,0 +1,43 @@
+dn: ou=Users,dc=wildfly,dc=org
+objectClass: organizationalUnit
+ou: Users
+
+dn: uid=ldapadmin,ou=Users,dc=wildfly,dc=org
+objectClass: inetOrgPerson
+cn: Ldap Admin
+sn: admin
+uid: ldapadmin
+userPassword: {SSHA}nVPnjhm1xR8aRA03payFZfVS7KykeHXk
+
+dn: uid=developer,ou=Users,dc=wildfly,dc=org
+objectClass: inetOrgPerson
+cn: Developer JBoss
+sn: jboss
+uid: developer
+userPassword: {SSHA}nVPnjhm1xR8aRA03payFZfVS7KykeHXk
+
+dn: uid=analista,ou=Users,dc=wildfly,dc=org
+objectClass: inetOrgPerson
+cn: Analista DevOps
+sn: devops
+uid: analista
+userPassword: {SSHA}nVPnjhm1xR8aRA03payFZfVS7KykeHXk
+
+dn: uid=visualizador,ou=Users,dc=wildfly,dc=org
+objectClass: inetOrgPerson
+cn: Visualizador Wildfly
+sn: wildfly
+uid: visualizador
+userPassword: {SSHA}nVPnjhm1xR8aRA03payFZfVS7KykeHXk
+
+dn: ou=Roles,dc=wildfly,dc=org
+objectclass: organizationalUnit
+ou: Roles
+
+dn: cn=Admin,ou=Roles,dc=wildfly,dc=org
+objectClass: groupOfNames
+cn: Admin
+member: uid=ldapadmin,ou=Users,dc=wildfly,dc=org
+member: uid=developer,ou=Users,dc=wildfly,dc=org
+member: uid=analista,ou=Users,dc=wildfly,dc=org
+member: uid=visualizador,ou=Users,dc=wildfly,dc=org
